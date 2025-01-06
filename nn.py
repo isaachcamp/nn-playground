@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
 from layers import Dense
+from regularisation import Dropout
 from functional import relu_forward, softmax, categorical_cross_entropy_loss
 from optimisers import exponential_decay
 from manipulate_data import one_hot, flatten
@@ -15,19 +16,29 @@ EPOCHS = 50
 
 
 class NeuralNetwork:
-    def __init__(self) -> None:
+    def __init__(self, training: bool = True) -> None:
+        self.training = training
         self.layers = [
-            Dense((784, 128), activation=relu_forward),
-            Dense((128, 24), activation=relu_forward),
+            Dense((784, 512), activation=relu_forward),
+            Dense((512, 512), activation=relu_forward),
+            Dense((512, 24), activation=relu_forward),
             Dense((24, 10), activation=softmax)
         ]
 
     def init_params(self):
+        """Initialise parameters for all layers in the network."""
+        # Collect parameters for JAX grad computation.
         return [layer.init_params() for layer in self.layers]
 
-    def forward(self, params, x):
-        for layer, p in zip(self.layers, params):
+    def forward(self, params, x, dropout=Dropout(0.3)):
+        for layer, p in zip(self.layers[:-1], params[:-1]):
             x = layer.forward(x, p['weights'], p['biases'])
+
+            # Implement dropout for hidden layers.
+            if isinstance(layer, Dense) and self.training:
+                x = dropout(x)
+
+        x = self.layers[-1].forward(x, params[-1]['weights'], params[-1]['biases'])
         return x
 
     def __call__(self, params, x):
