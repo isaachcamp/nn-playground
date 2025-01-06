@@ -1,19 +1,22 @@
 
-import numpy as np
+import jax
+import jax.numpy as jnp
 
-def random_init_weights(dims: tuple) -> np.ndarray:
+Array = jnp.ndarray
+
+def random_init_weights(dims: tuple, key: Array) -> Array:
     """Generate random weights from Normal distribution and scale by 0.01."""
-    return np.random.randn(*dims) * 0.01
+    return jax.random.normal(key, dims) * 0.01
 
-def he_init_weights(dims: tuple) -> np.ndarray:
+def he_init_weights(dims: tuple, key: Array) -> Array:
     """Initialise weights using He (2015) method, with normalised variance."""
-    return np.random.randn(*dims) * np.sqrt(2 / dims[0])
+    return jax.random.normal(key, dims) * jnp.sqrt(2 / dims[0])
 
 def initialise_weights(
         dims: tuple,
         method: str = 'default',
-        seed: int = None
-    ) -> np.ndarray:
+        seed: int = 42
+    ) -> Array:
     """
     Initialise weights for a given layer.
 
@@ -28,12 +31,11 @@ def initialise_weights(
     np.ndarray: The initialized weights as a NumPy array.
     """
 
-    if seed is not None:
-        np.random.seed(seed)
+    key = jax.random.key(seed)
 
     if method == 'default':
-        return random_init_weights(dims)
+        return random_init_weights(dims, key)
     elif method == 'He':
-        return he_init_weights(dims)
+        return he_init_weights(dims, key)
 
     raise KeyError(f'Method "{method}" not recognised.')
