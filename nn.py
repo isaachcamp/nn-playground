@@ -16,25 +16,18 @@ EPOCHS = 50
 
 
 class NeuralNetwork:
-    def __init__(self, training: bool = True) -> None:
+    def __init__(self, layers, params, training: bool = True) -> None:
+        self.layers = layers
+        self.set_params(params)
         self.training = training
-        self.layers = [
-            Dense((784, 512), activation=relu_forward),
-            Dense((512, 512), activation=relu_forward),
-            Dense((512, 24), activation=relu_forward),
-            Dense((24, 10), activation=softmax)
-        ]
 
-    def init_params(self):
-        """Initialise parameters for all layers in the network."""
-        # Collect parameters for JAX grad computation.
-        return [layer.init_params() for layer in self.layers]
+    def set_params(self, params):
+        self.params = params
 
-    def forward(self, params, x, dropout=Dropout(0.3)):
+    def forward(self, params, x, dropout=Dropout(0.2)):
         for layer, p in zip(self.layers[:-1], params[:-1]):
             x = layer.forward(x, p['weights'], p['biases'])
 
-            # Implement dropout for hidden layers.
             if isinstance(layer, Dense) and self.training:
                 x = dropout(x)
 
@@ -44,13 +37,17 @@ class NeuralNetwork:
     def __call__(self, params, x):
         return self.forward(params, x)
 
-    @staticmethod
-    def update(params, grads, lr):
+    def update(self, params, grads, lr):
         for p, g in zip(params, grads):
             p['weights'] -= lr * g['weights']
             p['biases'] -= lr * g['biases']
-        return params
+        self.set_params(params)
 
+
+def init_params(layers):
+    """Initialise parameters for all layers in the network."""
+    # Collect parameters for JAX grad computation.
+    return [layer.init_params() for layer in layers]
 
 def loss(params, model, x, y_true):
     y_pred = model(params, x)
@@ -75,21 +72,29 @@ if __name__ == '__main__':
     train_dataloader = DataLoader(train_dataset, batch_size=128, shuffle=True)
 
     # Initialize neural network parameters.
-    nn = NeuralNetwork()
-    params = nn.init_params()
-    costs = []
+    # Set up neural network.
+    layers = [
+            Dense((784, 512), activation=relu_forward),
+            Dense((512, 512), activation=relu_forward),
+            Dense((512, 24), activation=relu_forward),
+            Dense((24, 10), activation=softmax)
+        ]
+    params = init_params(layers)
+    nn = NeuralNetwork(layers, params)
 
     # Train the neural network.
+    costs = []
     for epoch in range(EPOCHS):
         for train_data, train_labels in iter(train_dataloader):
             inputs = flatten(jnp.array(train_data.numpy()))
             targets = jnp.array(one_hot(train_labels.numpy(), num_classes=10))
 
-            cost, grads = value_and_grad(loss)(params, nn, inputs, targets)
-            costs.append(cost)
+            cost, grads = value_and_grad(loss)(nn.params, nn, inputs, targets)
 
             learning_rate = exponential_decay(LEARNING_RATE, step=epoch)
-            params = nn.update(params, grads, learning_rate)
+            nn.update(nn.params, grads, learning_rate)
+
+        costs.append(cost)
 
         if epoch % 10 == 0:
             print(f'Epoch {epoch}: Loss = {cost}')
