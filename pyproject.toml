@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "nn-playground"
+version = "0.1.0"
+description = "Basic neural network architectures from scratch with numpy/jax"
+authors = ["Isaac Campbell <isaac.campbell@wolfson.ox.ac.uk>"]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+repository = "https://github.com/isaachcamp/nn-playground"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+torch = "^2.5.1"
+numpy = "^2.1.3"
+torchvision = "^0.20.1"
+scipy = "^1.14.1"
+matplotlib = "^3.9.3"
+pytest = "^8.3.4"
+jax = "^0.4.36"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
