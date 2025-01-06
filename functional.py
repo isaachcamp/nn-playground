@@ -18,5 +18,5 @@ def softmax(x):
 
 def categorical_cross_entropy_loss(y_true, y_pred):
     """Compute the cross-entropy loss between true and predicted labels."""
-    epsilon = 1e-8 # for numerical stability
-    return -jnp.mean(y_true * jnp.log1p(y_pred + epsilon - 1))
+    epsilon = 1e-8 # for numerical stability, avoiding log(0).
+    return -jnp.mean(y_true * jnp.log(y_pred + epsilon))
