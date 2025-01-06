@@ -47,6 +47,8 @@ def loss(params, model, x, y_true):
 
 
 if __name__ == '__main__':
+
+    # Load MNIST dataset.
     train_dataset = datasets.MNIST('./data', train=True,   download=True,
         transform=transforms.Compose([
             transforms.ToTensor(),
@@ -61,10 +63,12 @@ if __name__ == '__main__':
 
     train_dataloader = DataLoader(train_dataset, batch_size=128, shuffle=True)
 
+    # Initialize neural network parameters.
     nn = NeuralNetwork()
     params = nn.init_params()
     costs = []
 
+    # Train the neural network.
     for epoch in range(EPOCHS):
         for train_data, train_labels in iter(train_dataloader):
             inputs = flatten(jnp.array(train_data.numpy()))
