@@ -1,5 +1,4 @@
 
-from functools import reduce
 import jax
 import jax.numpy as jnp
 
@@ -12,7 +11,7 @@ def random_init_weights(dims: tuple, key: Array) -> Array:
 def he_init_weights(dims: tuple, key: Array) -> Array:
     """Initialise weights using He (2015) method, with normalised variance."""
     # Normalisation depends on size of previous layer
-    prev_layer_size = reduce(lambda x, y: x * y, dims[:-1])
+    prev_layer_size = jnp.array(dims[:-1]).prod()
     return jax.random.normal(key, dims) * jnp.sqrt(2 / prev_layer_size)
 
 def initialise_weights(
