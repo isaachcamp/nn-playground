@@ -1,22 +1,27 @@
 
 
 import jax.numpy as jnp
+from jax.scipy.special import logsumexp
 
 
 def linear_forward(x, w, b):
     """Compute the forward pass for a linear (fully-connected) layer."""
-    return jnp.dot(x, w) + b
+    # weights act as transformation matrix.
+    return jnp.dot(w, x) + b
 
-def relu_forward(x):
+def relu(x):
     """Compute the forward pass for a ReLU activation function."""
     return jnp.maximum(0, x)
 
-def softmax(x):
-    """Compute softmax values for each sets of scores in x."""
-    e_x = jnp.exp(x - jnp.max(x))
-    return e_x / e_x.sum()
+def logsoftmax(logits):
+    """
+    Compute log-softmax for logits.
+    This is more numerically stable than softmax when computing log-likelihoods.
+    JAX's logsumexp function is numerically stable and avoids underflow/overflow.
+    """
+    return logits - logsumexp(logits)
 
-def categorical_cross_entropy_loss(y_true, y_pred):
+def categorical_cross_entropy(y_true, y_pred):
     """Compute the cross-entropy loss between true and predicted labels."""
-    epsilon = 1e-8 # for numerical stability, avoiding log(0).
-    return -jnp.mean(y_true * jnp.log(y_pred + epsilon))
+    # Assumes y_pred is in log probabilities, and y_true is one-hot encoded.
+    return -jnp.mean(y_true * y_pred)
