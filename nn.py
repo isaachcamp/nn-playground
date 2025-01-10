@@ -52,9 +52,7 @@ class NeuralNetwork:
         activations = x
         for p in params[:-1]:
             outputs = F.linear_forward(activations, p['weights'], p['biases'])
-
-            # outputs = self.dropout(outputs) if self.training else outputs
-
+            outputs = self.dropout(outputs) if self.training else outputs
             activations = F.relu(outputs)
 
         final_p = params[-1]
@@ -83,7 +81,6 @@ def init_params(layers, key):
     return [layer.init_params(key) for key,layer in zip(keys, layers)]
 
 if __name__ == '__main__':
-    
     # Set up neural network.
     n_classes = 10
     input_size = 28 * 28
