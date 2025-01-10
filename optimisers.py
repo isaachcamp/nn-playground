@@ -35,7 +35,6 @@ class SGD(Optimiser):
             p['biases'] -= lr * g['biases']
         return params, self.state
 
-
 class Momentum(Optimiser):
     def __init__(self, learning_rate: float, momentum: float = 0.9) -> None:
         super().__init__(learning_rate)
