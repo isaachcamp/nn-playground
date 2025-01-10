@@ -166,3 +166,6 @@ data/
 
 # ignore testing notebook
 testing.ipynb
+
+# ignore image files 
+*.png
